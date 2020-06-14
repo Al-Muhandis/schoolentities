@@ -142,10 +142,6 @@ type
 
 implementation
 
-//uses
-//  config
-//  ;
-
 var
   _con: TdSQLdbConnector = nil;
   _query: TdSQLdbQuery = nil;
@@ -407,19 +403,6 @@ begin
   SaveUser;
 end;
 
-{
-procedure TopCoursesDB.DeleteDialogues(aUserID: Integer);
-var
-  aDialogue: TSession;
-begin
-  Session.Student:=aUserID;
-  opSessions.Find(Sessions, 'student=:student');
-  for aDialogue in Sessions do
-    opSessions.Remove(aDialogue);
-  if FAutoApply then
-    opSessions.Apply;
-end;
-}
 function TopCoursesDB.FindEntitiesByParentID(aEntityType: TEntityType;
   aParentID: Int64; IsCourseOwner: Boolean): Integer;
 begin

@@ -271,7 +271,7 @@ var
 implementation
 
 uses
-  strutils, tgsendertypes
+  strutils
   ;
 
 var
