@@ -62,6 +62,7 @@ type
     function GetStudentSpots: TopStudentSpots.TEntities;
     function GetUser: TUser;
     function GetUsers: TopUsers.TEntities;
+    procedure Log(aEventType: TEventType; const aMessage: String);
     function NewSession(aUserID: Int64; aEntityType: TEntityType; aEntityID: Integer;
       aTeacher: Int64): Integer;
   protected
@@ -336,6 +337,15 @@ begin
   Result:=FUsers;
 end;
 
+procedure TopCoursesDB.Log(aEventType: TEventType; const aMessage: String);
+begin
+  if Assigned(FLogger) then
+    if FLogDebug and (aEventType=etDebug) then
+      FLogger.Debug(aMessage)
+    else
+      FLogger.Log(aEventType, aMessage);
+end;
+
 constructor TopCoursesDB.Create;
 begin
   FAutoApply:=True;
@@ -417,7 +427,7 @@ begin
     seTearcher:    Result:=GetSpotList(aParentID, IsCourseOwner, usTeacher).Count;
   else
     Result:=0;
-    Logger.Error('FindEntitiesByParentID: Unknown entity type!');
+    Log(etError, 'FindEntitiesByParentID: Unknown entity type!');
   end;
 end;
 
@@ -483,7 +493,7 @@ begin
     seLesson: Result:=NewLesson(aSchoolEntity as TLesson);
     seSlide:  Result:=NewSlide(aSchoolEntity as TSlide);
   else
-    Logger.Error('Unknown school entity type! Procedure NewSchoolEntity...');
+    Log(etError, 'Unknown school entity type! Procedure NewSchoolEntity...');
     Result:=0;
   end;
 end;
