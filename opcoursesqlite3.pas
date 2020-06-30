@@ -110,7 +110,7 @@ type
     function NewSchoolEntity(aEntityType: TEntityType; aSchoolEntity: TSchoolElement = nil): Integer;
     procedure NewSessionStudent(aUserID: Int64; aEntityType: TEntityType; aEntityID: Integer;
       aTearcher: Int64);
-    function NewStudentSpot(aUserID: Int64; aCourseID: Integer; aUserStatus: TUserStatus = usStudent): Integer;
+    function NewStudentSpot(aUserID: Int64; aCourseID: Integer; aUserStatus: TUserStatus = usStudent; aTearcher: Int64 = 0): Integer;
     function opLastInsertID: Integer;
     function SpotNextSlide(aSpot: TStudentSpot; out IsLastLesson: Boolean): Integer;
     function ReplaceEntity(aEntityType: TEntityType; aID1, aID2: Int64): Boolean;
@@ -393,7 +393,9 @@ begin
     seSlide:       opSlides.Remove;
     seInvitation:  opInvitations.Remove;
     seSession:     opSessions.Remove;
-    seStudentSpot..seTearcher: opStudentSpots.Remove;
+    seStudentSpot..seTearcher: opStudentSpots.Remove;   
+  else
+    Logger.Error('Unknown entity type while DeleteCourseEntity');
   end;
   if FAutoApply then
     case aEntityType of
@@ -403,7 +405,9 @@ begin
       seSlide:       opSlides.Apply;
       seInvitation:  opInvitations.Apply;
       seSession:     opSessions.Apply;
-      seStudentSpot..seTearcher: opStudentSpots.Apply;
+      seStudentSpot..seTearcher: opStudentSpots.Apply; 
+    else
+      Logger.Error('Unknown entity type while DeleteCourseEntity');
     end;
 end;
 
@@ -425,9 +429,10 @@ begin
     seStudentSpot: Result:=GetSpotList(aParentID, IsCourseOwner, usStudent).Count;
     seStudent:     Result:=GetSpotList(aParentID, IsCourseOwner, usStudent).Count;
     seTearcher:    Result:=GetSpotList(aParentID, IsCourseOwner, usTeacher).Count;
+    seSession:     Result:=0; // No parent entity
   else
     Result:=0;
-    Log(etError, 'FindEntitiesByParentID: Unknown entity type!');
+    Log(etError, 'FindEntitiesByParentID : unexpected entity type ('+EntityTypeToString(aEntityType)+')!');
   end;
 end;
 
@@ -520,11 +525,12 @@ begin
 end;
 
 function TopCoursesDB.NewStudentSpot(aUserID: Int64; aCourseID: Integer;
-  aUserStatus: TUserStatus): Integer;
+  aUserStatus: TUserStatus; aTearcher: Int64): Integer;
 begin
   StudentSpot.User:=aUserID;
   StudentSpot.Course:=aCourseID;
   StudentSpot.UserStatus:=aUserStatus;
+  StudentSpot.Tearcher:=aTearcher;
   opStudentSpots.Add(StudentSpot);
   StudentSpot.id:=opLastInsertID;
   Result:=StudentSpot.ID;
@@ -858,7 +864,9 @@ begin
     seLesson:                  opLessons.Modify(Lesson);
     seSlide:                   opSlides.Modify(Slide);
     seInvitation:              opInvitations.Modify(Invitation);
-    seStudentSpot..seTearcher: opStudentSpots.Modify(StudentSpot);
+    seStudentSpot..seTearcher: opStudentSpots.Modify(StudentSpot); 
+  else
+    Logger.Error('Unknown entity type while SaveCourseEntity');
   end;
   if FAutoApply then
     case aEntityType of
@@ -867,7 +875,9 @@ begin
       seLesson:                  opLessons.Apply;
       seSlide:                   opSlides.Apply;
       seInvitation:              opInvitations.Apply;
-      seStudentSpot..seTearcher: opStudentSpots.Apply;
+      seStudentSpot..seTearcher: opStudentSpots.Apply;  
+    else
+      Logger.Error('Unknown entity type while SaveCourseEntity');
     end;
 end;
 

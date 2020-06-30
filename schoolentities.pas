@@ -286,8 +286,6 @@ begin
     ltOpen:       Result:=s_OpenSource;
     ltPublic:     Result:=s_Public;
     ltPrivate:    Result:=s_Private;
-  else
-    Result:=EmptyStr;
   end;
 end;
 
