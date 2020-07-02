@@ -393,7 +393,7 @@ begin
     seSlide:       opSlides.Remove;
     seInvitation:  opInvitations.Remove;
     seSession:     opSessions.Remove;
-    seStudentSpot..seTearcher: opStudentSpots.Remove;   
+    seStudentSpot..seTeacher: opStudentSpots.Remove;
   else
     Logger.Error('Unknown entity type while DeleteCourseEntity');
   end;
@@ -405,7 +405,7 @@ begin
       seSlide:       opSlides.Apply;
       seInvitation:  opInvitations.Apply;
       seSession:     opSessions.Apply;
-      seStudentSpot..seTearcher: opStudentSpots.Apply; 
+      seStudentSpot..seTeacher: opStudentSpots.Apply;
     else
       Logger.Error('Unknown entity type while DeleteCourseEntity');
     end;
@@ -428,7 +428,7 @@ begin
     seInvitation:  Result:=GetInvitationsList(aParentID).Count;
     seStudentSpot: Result:=GetSpotList(aParentID, IsCourseOwner, usStudent).Count;
     seStudent:     Result:=GetSpotList(aParentID, IsCourseOwner, usStudent).Count;
-    seTearcher:    Result:=GetSpotList(aParentID, IsCourseOwner, usTeacher).Count;
+    seTeacher:    Result:=GetSpotList(aParentID, IsCourseOwner, usTeacher).Count;
     seSession:     Result:=0; // No parent entity
   else
     Result:=0;
@@ -530,7 +530,7 @@ begin
   StudentSpot.User:=aUserID;
   StudentSpot.Course:=aCourseID;
   StudentSpot.UserStatus:=aUserStatus;
-  StudentSpot.Tearcher:=aTearcher;
+  StudentSpot.Teacher:=aTearcher;
   opStudentSpots.Add(StudentSpot);
   StudentSpot.id:=opLastInsertID;
   Result:=StudentSpot.ID;
@@ -630,7 +630,7 @@ begin
     seLesson:     Result:=GetLessonByID(aID);
     seSlide:      Result:=GetSlideByID(aID);
     seInvitation: Result:=GetInvitationByID(aID);
-    seStudentSpot..seTearcher: Result:=GetSpotByID(aID);
+    seStudentSpot..seTeacher: Result:=GetSpotByID(aID);
     seSession:    Result:=GetSessionByID(aID);
   else
     Result:=nil;
@@ -864,7 +864,7 @@ begin
     seLesson:                  opLessons.Modify(Lesson);
     seSlide:                   opSlides.Modify(Slide);
     seInvitation:              opInvitations.Modify(Invitation);
-    seStudentSpot..seTearcher: opStudentSpots.Modify(StudentSpot); 
+    seStudentSpot..seTeacher: opStudentSpots.Modify(StudentSpot);
   else
     Logger.Error('Unknown entity type while SaveCourseEntity');
   end;
@@ -875,7 +875,7 @@ begin
       seLesson:                  opLessons.Apply;
       seSlide:                   opSlides.Apply;
       seInvitation:              opInvitations.Apply;
-      seStudentSpot..seTearcher: opStudentSpots.Apply;  
+      seStudentSpot..seTeacher:  opStudentSpots.Apply;
     else
       Logger.Error('Unknown entity type while SaveCourseEntity');
     end;

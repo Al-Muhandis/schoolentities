@@ -9,7 +9,7 @@ uses
 
 type
   TEntityType = (seRoot, seUser, seCourse, seLesson, seSlide, seInvitation, seSession,
-    seStudentSpot, seStudent, seTearcher, seUnknown);
+    seStudentSpot, seStudent, seTeacher, seUnknown);
 
   { TSchoolElement }
 
@@ -153,7 +153,7 @@ type
     FCourse: Integer;
     FID: Integer;
     FStatus: Integer;
-    FTearcher: Int64;
+    FTeacher: Int64;
     function GetUserStatus: TUserStatus;
     procedure SetUserStatus(AValue: TUserStatus);
   protected
@@ -170,7 +170,7 @@ type
     property Capacity: Integer read FCapacity write FCapacity;
     property Course: Integer read FCourse write FCourse;
     property Status: Integer read FStatus write FStatus;
-    property Tearcher: Int64 read FTearcher write FTearcher;
+    property Teacher: Int64 read FTeacher write FTeacher;
   end;
 
   { TStudentSpot }
@@ -181,7 +181,7 @@ type
     FID: Integer;
     FLesson: Integer;
     FStatus: Integer;
-    FTearcher: Int64;
+    FTeacher: Int64;
     FUser: Int64;
     function GetUserStatus: TUserStatus;
     procedure SetUserStatus(AValue: TUserStatus);
@@ -197,7 +197,7 @@ type
     property User: Int64 read FUser write FUser;
     property Course: Integer read FCourse write FCourse;
     property Status: Integer read FStatus write FStatus;
-    property Tearcher: Int64 read FTearcher write FTearcher;
+    property Teacher: Int64 read FTeacher write FTeacher;
     property Lesson: Integer read FLesson write FLesson;
   end;
 
@@ -255,13 +255,13 @@ resourcestring
   s_Sessions='Dialogues';
   s_Student='Student';
   s_Students='Students';
-  s_Tearcher='Tearcher';
-  s_Tearchers='Tearchers';
+  s_Teacher='Teacher';
+  s_Teachers='Teachers';
   s_GotMsg='You got a message';
   s_WroteMsg='wrote you a message';
   s_DYWntEntrDlg='Do you want to enter into a dialogue with him?';
   s_YStudent='You are a student of the following courses';
-  s_YTearcher='You are a tearcher of the following courses';
+  s_YTeacher='You are a teacher of the following courses';
 
 var
   SchoolClasses: array[TEntityType] of TSchoolElementClass =
@@ -277,8 +277,8 @@ uses
 var
   SchoolEntityNames: array[TEntityType] of String =
     ('root', 'user', 'course', 'lesson', 'slide', 'invitation', 'session', 'spot', 'student',
-      'tearcher', '');
-  UserStatusNames: array[TUserStatus] of String =('none', 'student', 'tearcher', '');
+      'teacher', '');
+  UserStatusNames: array[TUserStatus] of String =('none', 'student', 'teacher', '');
 
 function LicTypeToCaption(const aLicType: TLicType): String;
 begin
@@ -322,7 +322,7 @@ begin
       seSession:    Result:=s_Sessions;
       seStudentSpot: Result:= s_Students;
       seStudent:     Result:=s_Students;
-      seTearcher:    Result:=s_Tearchers;
+      seTeacher:    Result:=s_Teachers;
     else
       Result:=EmptyStr;
     end
@@ -336,7 +336,7 @@ begin
       seSession:    Result:=s_Session;
       seStudentSpot: Result:=s_Student;
       seStudent:     Result:=s_Student;
-      seTearcher:    Result:=s_Tearcher;
+      seTeacher:    Result:=s_Teacher;
     else
       Result:=EmptyStr;
     end;
@@ -396,7 +396,7 @@ begin
   aDest.FUser:=FUser;
   aDest.FCourse:=FCourse;
   aDest.FStatus:=FStatus;
-  aDest.FTearcher:=FTearcher;
+  aDest.FTeacher:=FTeacher;
   aDest.FLesson:=FLesson;
 end;
 
@@ -416,7 +416,7 @@ begin
   FUser:=0;
   FCourse:=0;
   UserStatus:=usNone;
-  FTearcher:=0;
+  FTeacher:=0;
   FLesson:=0;
 end;
 
@@ -444,7 +444,7 @@ begin
   aDest.FCapacity:=FCapacity;
   aDest.FCourse:=FCourse;
   aDest.FStatus:=FStatus;
-  aDest.FTearcher:=FTearcher;
+  aDest.FTeacher:=FTeacher;
 end;
 
 function TInvitation.GetID64: Int64;
@@ -464,7 +464,7 @@ begin
   FApplied:=0;
   FCourse:=0;
   UserStatus:=usStudent;
-  FTearcher:=0;
+  FTeacher:=0;
 end;
 
 class function TInvitation.EntityType: TEntityType;
