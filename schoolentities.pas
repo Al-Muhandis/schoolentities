@@ -16,6 +16,7 @@ type
   TSchoolElement = class(TPersistent)
   private
     FName: String;
+    FTeacher: Int64;
     function GetName: String;
     procedure Initiate; virtual;
     procedure SetName(AValue: String);
@@ -28,6 +29,7 @@ type
     class function EntityType: TEntityType; virtual;
     property Name: String read GetName write SetName;
     property ID64: Int64 read GetID64 write SetID64;
+    property Teacher: Int64 read FTeacher write FTeacher;
   end;
   TSchoolElementClass = class of TSchoolElement;
 
@@ -112,6 +114,7 @@ type
     property Contact: String read FContact write FContact;
     property ShowContact: Boolean read FShowContact write FShowContact;
     property Testing: Boolean read FTesting write FTesting;
+    property Teacher;
   end;
 
   { TLesson }
@@ -153,7 +156,6 @@ type
     FCourse: Integer;
     FID: Integer;
     FStatus: Integer;
-    FTeacher: Int64;
     function GetUserStatus: TUserStatus;
     procedure SetUserStatus(AValue: TUserStatus);
   protected
@@ -170,7 +172,7 @@ type
     property Capacity: Integer read FCapacity write FCapacity;
     property Course: Integer read FCourse write FCourse;
     property Status: Integer read FStatus write FStatus;
-    property Teacher: Int64 read FTeacher write FTeacher;
+    property Teacher;
   end;
 
   { TStudentSpot }
@@ -181,7 +183,6 @@ type
     FID: Integer;
     FLesson: Integer;
     FStatus: Integer;
-    FTeacher: Int64;
     FUser: Int64;
     function GetUserStatus: TUserStatus;
     procedure SetUserStatus(AValue: TUserStatus);
@@ -197,7 +198,7 @@ type
     property User: Int64 read FUser write FUser;
     property Course: Integer read FCourse write FCourse;
     property Status: Integer read FStatus write FStatus;
-    property Teacher: Int64 read FTeacher write FTeacher;
+    property Teacher;
     property Lesson: Integer read FLesson write FLesson;
   end;
 
@@ -209,11 +210,11 @@ type
     FEntityID: Integer;
     FID: Integer;
     FStudent: Int64;
-    FTeacher: Int64;
   protected
     function GetID64: Int64; override;
     procedure SetID64(AValue: Int64); override;
   public
+    procedure AssignTo(Dest: TPersistent); override;
     procedure Initiate; override;
     function GetSourceEntityType: TEntityType;
     class function EntityType: TEntityType; override;
@@ -222,7 +223,7 @@ type
     property SourceEntity: String read FEntity write FEntity;
     property EntityID: Integer read FEntityID write FEntityID;
     property Student: Int64 read FStudent write FStudent;
-    property Teacher: Int64 read FTeacher write FTeacher;
+    property Teacher;
   end;
 
 function EntityFromString(const aAlias: String): TEntityType;
@@ -261,7 +262,9 @@ resourcestring
   s_WroteMsg='wrote you a message';
   s_DYWntEntrDlg='Do you want to enter into a dialogue with him?';
   s_YStudent='You are a student of the following courses';
-  s_YTeacher='You are a teacher of the following courses';
+  s_YTeacher='You are a teacher of the following courses'; 
+  s_TakeCourses='Take courses'; 
+  s_TeachCourses='Teach courses';
 
 var
   SchoolClasses: array[TEntityType] of TSchoolElementClass =
@@ -354,13 +357,25 @@ begin
   FID:=AValue;
 end;
 
+procedure TSession.AssignTo(Dest: TPersistent);
+var
+  aDest: TSession;
+begin
+  inherited AssignTo(Dest);
+  if not (Dest is TSession) then
+    Exit;
+  aDest:=TSession(Dest);
+  aDest.FStudent:=FStudent;
+  aDest.FEntity:=FEntity;
+  aDest.FEntityID:=FEntityID;
+end;
+
 procedure TSession.Initiate;
 begin
   inherited Initiate;
   FEntity:=EmptyStr;
   FEntityID:=0;
   FStudent:=0;
-  FTeacher:=0;
 end;
 
 function TSession.GetSourceEntityType: TEntityType;
@@ -396,7 +411,6 @@ begin
   aDest.FUser:=FUser;
   aDest.FCourse:=FCourse;
   aDest.FStatus:=FStatus;
-  aDest.FTeacher:=FTeacher;
   aDest.FLesson:=FLesson;
 end;
 
@@ -416,7 +430,6 @@ begin
   FUser:=0;
   FCourse:=0;
   UserStatus:=usNone;
-  FTeacher:=0;
   FLesson:=0;
 end;
 
@@ -444,7 +457,6 @@ begin
   aDest.FCapacity:=FCapacity;
   aDest.FCourse:=FCourse;
   aDest.FStatus:=FStatus;
-  aDest.FTeacher:=FTeacher;
 end;
 
 function TInvitation.GetID64: Int64;
@@ -464,7 +476,6 @@ begin
   FApplied:=0;
   FCourse:=0;
   UserStatus:=usStudent;
-  FTeacher:=0;
 end;
 
 class function TInvitation.EntityType: TEntityType;
@@ -642,6 +653,7 @@ end;
 procedure TSchoolElement.Initiate;
 begin
   FName:=EmptyStr;
+  FTeacher:=0;
 end;
 
 procedure TSchoolElement.SetName(AValue: String);
@@ -657,6 +669,7 @@ begin
     Exit;
   end;
   TSchoolElement(Dest).FName:=FName;
+  TSchoolElement(Dest).FTeacher:=FTeacher;
 end;
 
 class function TSchoolElement.EntityAlias: String;
