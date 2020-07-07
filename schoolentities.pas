@@ -95,6 +95,7 @@ type
   TCourse = class(TCourseElement)
   private
     FContact: String;
+    FHistoryChat: String;
     FOwner: Int64;
     FShowContact: Boolean;
     FTesting: Boolean;
@@ -115,6 +116,7 @@ type
     property ShowContact: Boolean read FShowContact write FShowContact;
     property Testing: Boolean read FTesting write FTesting;
     property Teacher;
+    property HistoryChat: String read FHistoryChat write FHistoryChat;
   end;
 
   { TLesson }
@@ -257,7 +259,8 @@ resourcestring
   s_Student='Student';
   s_Students='Students';
   s_Teacher='Teacher';
-  s_Teachers='Teachers';
+  s_Teachers='Teachers'; 
+  s_HistoryChat='History chat';
   s_GotMsg='You got a message';
   s_WroteMsg='wrote you a message';
   s_DYWntEntrDlg='Do you want to enter into a dialogue with him?';
@@ -567,6 +570,7 @@ begin
   aDest.FShowContact:=FShowContact;
   aDest.FVisibility:=FVisibility;
   aDest.FTesting:=FTesting;
+  aDest.HistoryChat:=FHistoryChat;
 end;
 
 class function TCourse.EntityType: TEntityType;
@@ -586,6 +590,7 @@ begin
   FVisibility:=0;
   FContact:=EmptyStr;
   FTesting:=False;
+  FHistoryChat:=EmptyStr;
 end;
 
 { TCourseElement }
