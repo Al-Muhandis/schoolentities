@@ -1,18 +1,18 @@
 unit opcoursesqlite3;
 
 {$mode objfpc}{$H+}
-
+{$WARN 6058 off : Call to subroutine "$1" marked as inline is not inlined}
 interface
 
 uses
-  Classes, SysUtils, SchoolEntities, dOpf, dSQLdbBroker, sqlite3conn, eventlog
+  Classes, SysUtils, SchoolEntities, dOpf, dsqldbbroker, sqlite3conn, eventlog
   ;
 
 type
 
   { TopCoursesDB }
 
-  TopCoursesDB = class
+  TopCoursesDB = class(TObject, IORMInterface)
   public type
     TopInvitations = specialize TdGSQLdbEntityOpf<TInvitation>;
     TopSessions = specialize TdGSQLdbEntityOpf<TSession>;
@@ -83,12 +83,14 @@ type
     function FindEntitiesByParentID(aEntityType: TEntityType; aParentID: Int64;
       IsCourseOwner: Boolean): Integer;
     function FindLessonByID(aLessonID: Integer): Boolean;
+    function GetCourse(aCourse: TCourse): Boolean;
     function GetCourseByID(aCourseID: Integer): TCourse;
     function GetCoursesList(aUserID: Int64 = 0): TopCourses.TEntities;
     function GetEntityByID(aEntityType: TEntityType; aID: Int64): TSchoolElement;
 //    function GetSlideOrdIndex(aSlideID: Integer): Integer;
     function GetInvitationByID(aInvitationID: Integer): TInvitation;
     function GetInvitationsList(aCourseID: Integer): TopInvitations.TEntities;
+    function GetLesson(aLesson: TLesson): Boolean;
     function GetLessonByID(aID: Integer): TLesson;
     function GetLessonIndexByID(aID: Integer): Integer;
     function GetLessonsList(aCourseID: Integer): TopLessons.TEntities;
@@ -100,7 +102,8 @@ type
     function GetSpotByUserNCourse(aUserID: Int64; aCourseID: Integer): TStudentSpot;
     function GetSpotListByCourse(aCourseID: Integer; aUserStatus: TUserStatus): TopStudentSpots.TEntities;
     function GetSpotListByUser(aStudentID: Int64; aUserStatus: TUserStatus): TopStudentSpots.TEntities;
-    function GetSpotList(aID: Int64; IsCourseOwner: Boolean; aUserStatus: TUserStatus): TopStudentSpots.TEntities;
+    function GetSpotList(aID: Int64; IsCourseOwner: Boolean; aUserStatus: TUserStatus): TopStudentSpots.TEntities; 
+    function GetUser(aUser: TUser): Boolean;
     function GetUsersList(): TopUsers.TEntities;
     function GetUserByID(aUserID: Int64): TUser;
     function NewCourse(aCourse: TCourse = nil): Integer;
@@ -120,6 +123,7 @@ type
     function SessionOpened(aUserID: Int64; aSession: Integer): Boolean;
     function SessionExists(aUser: Int64): Boolean;
     function SpotInCourse(aUserID: Int64; aCourseID: Integer): Boolean;
+    procedure StudentsToSCVDocument(aCSVStream: TStream);
     property Course: TCourse read GetCourse;
     property CourseEntity[EntityType: TEntityType]: TCourseElement read GetCourseEntity;
     property Courses: TopCourses.TEntities read GetCourses;
@@ -142,6 +146,10 @@ type
   end;
 
 implementation
+
+uses
+  csvdocument
+  ;
 
 var
   _con: TdSQLdbConnector = nil;
@@ -208,6 +216,13 @@ begin
   Result:=FLessons;
 end;
 
+function TopCoursesDB.GetUser(aUser: TUser): Boolean;
+begin
+  Result:=opUsers.Get(aUser);
+  if not Result then
+    aUser.Initiate;
+end;
+
 function TopCoursesDB.GetCourse: TCourse;
 begin
   Result:=opCourses.Entity;
@@ -260,6 +275,7 @@ begin
   begin
     FopStudentSpots:=TopStudentSpots.Create(Con, 'studentspots');
     FopStudentSpots.Table.PrimaryKeys.Text:='id';
+    TStudentSpot(FopStudentSpots.Entity).ORM:=Self;
   end;
   Result:=FopStudentSpots;
 end;
@@ -442,6 +458,13 @@ begin
   Result:=opLessons.Get;
   if not Result then
     Lesson.Initiate;
+end;
+
+function TopCoursesDB.GetCourse(aCourse: TCourse): Boolean;
+begin
+  Result:=opCourses.Get(aCourse);
+  if not Result then
+    aCourse.Initiate;
 end;
 
 function TopCoursesDB.NewCourse(aCourse: TCourse): Integer;
@@ -661,6 +684,13 @@ begin
     aInvitation.Free;
   end;
   Result:=Invitations;
+end;
+
+function TopCoursesDB.GetLesson(aLesson: TLesson): Boolean;
+begin
+  Result:=opLessons.Get(aLesson);
+  if not Result then
+    aLesson.Initiate;
 end;
 
 function TopCoursesDB.GetSpotList(aID: Int64; IsCourseOwner: Boolean;
@@ -912,6 +942,28 @@ begin
   StudentSpot.User:=aUserID;
   StudentSpot.Course:=aCourseID;
   Result:=opStudentSpots.Find(StudentSpot, 'user=:user AND course=:course');
+end;
+
+procedure TopCoursesDB.StudentsToSCVDocument(aCSVStream: TStream);
+var
+  aCSV: TCSVDocument;
+  iSpot: TStudentSpot;
+begin
+  aCSV:=TCSVDocument.Create;
+  aCSV.Delimiter:=';';
+  try
+    for iSpot in StudentSpots do
+    begin
+      iSpot.ORM:=Self;
+      aCSV.AddRow(iSpot.User.ToString);
+      aCSV.Cells[1, aCSV.RowCount-1]:=iSpot._User.Name;
+      aCSV.Cells[2, aCSV.RowCount-1]:=iSpot.Lesson.ToString;  
+      aCSV.Cells[3, aCSV.RowCount-1]:=iSpot._Lesson.Name;
+    end;
+    aCSV.SaveToStream(aCSVStream);
+  finally
+    aCSV.Free;
+  end;
 end;
 
 finalization

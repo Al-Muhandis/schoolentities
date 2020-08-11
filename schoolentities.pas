@@ -1,6 +1,7 @@
 unit SchoolEntities;
 
 {$mode objfpc}{$H+}
+{$interfaces corba}
 
 interface
 
@@ -11,11 +12,24 @@ type
   TEntityType = (seRoot, seUser, seCourse, seLesson, seSlide, seInvitation, seSession,
     seStudentSpot, seStudent, seTeacher, seUnknown);
 
+  TUser = class;
+  TCourse = class;
+  TLesson = class;
+
+  { IORMInterface }
+
+  IORMInterface = interface ['{1CCA5072-5A35-4FAC-9E06-D65E7A5BBE94}']
+    function GetUser(aUser: TUser): Boolean;                 
+    function GetCourse(aCourse: TCOurse): Boolean;
+    function GetLesson(aLesson: TLesson): Boolean;
+  end;
+
   { TSchoolElement }
 
   TSchoolElement = class(TPersistent)
   private
     FName: String;
+    FORM: IORMInterface; // CoursesDB
     FTeacher: Int64;
     function GetName: String;
     procedure Initiate; virtual;
@@ -27,6 +41,7 @@ type
   public
     class function EntityAlias: String;
     class function EntityType: TEntityType; virtual;
+    property ORM: IORMInterface read FORM write FORM;
     property Name: String read GetName write SetName;
     property ID64: Int64 read GetID64 write SetID64;
     property Teacher: Int64 read FTeacher write FTeacher;
@@ -186,15 +201,25 @@ type
     FLesson: Integer;
     FStatus: Integer;
     FUser: Int64;
+    F_Course: TCourse;
+    F_Lesson: TLesson;
+    F_User: TUser;
     function GetUserStatus: TUserStatus;
+    function Get_Course: TCourse;
+    function Get_Lesson: TLesson;
+    function Get_User: TUser;
     procedure SetUserStatus(AValue: TUserStatus);
   protected
     procedure AssignTo(Dest: TPersistent); override;
     function GetID64: Int64; override;
     procedure SetID64(AValue: Int64); override;
   public
+    destructor Destroy; override;
     procedure Initiate; override;
     property UserStatus: TUserStatus read GetUserStatus write SetUserStatus;
+    property _User: TUser read Get_User;
+    property _Lesson: TLesson read Get_Lesson;
+    property _Course: TCourse read Get_Course;
   published
     property ID: Integer read FID write FID;
     property User: Int64 read FUser write FUser;
@@ -288,6 +313,7 @@ var
 
 function LicTypeToCaption(const aLicType: TLicType): String;
 begin
+  Result:=EmptyStr;
   case aLicType of
     ltOpen:       Result:=s_OpenSource;
     ltPublic:     Result:=s_Public;
@@ -306,8 +332,15 @@ begin
 end;
 
 function EntityFromString(const aAlias: String): TEntityType;
+var
+  i: Integer;
 begin
-  Result:=TEntityType(AnsiIndexStr(aAlias, SchoolEntityNames));
+  i:=AnsiIndexStr(aAlias, SchoolEntityNames);
+  case i of
+    0..Ord(High(TEntityType)): Result:=TEntityType(i);
+  else
+    Result:=seUnknown;
+  end;
 end;
 
 function EntityTypeToString(aEntity: TEntityType): String;
@@ -398,6 +431,48 @@ begin
   Result:=TUserStatus(FStatus);
 end;
 
+function TStudentSpot.Get_Course: TCourse;
+begin
+  if not Assigned(FORM) then
+    Exit(nil);
+  if not Assigned(F_Course) then
+    F_Course:=TCourse.Create;
+  if F_Course.id<>FCourse then
+  begin
+    F_Course.id:=FCourse;
+    FORM.GetCourse(F_Course);
+  end;
+  Result:=F_Course;
+end;
+
+function TStudentSpot.Get_Lesson: TLesson;
+begin
+  if not Assigned(FORM) then
+    Exit(nil);
+  if not Assigned(F_Lesson) then
+    F_Lesson:=TLesson.Create;
+  if F_Lesson.id<>FLesson then
+  begin
+    F_Lesson.id:=FLesson;
+    FORM.GetLesson(F_Lesson);
+  end;
+  Result:=F_Lesson;
+end;
+
+function TStudentSpot.Get_User: TUser;
+begin
+  if not Assigned(FORM) then
+    Exit(nil);
+  if not Assigned(F_User) then
+    F_User:=TUser.Create;
+  if F_User.id<>FUser then
+  begin
+    F_User.id:=FUser;
+    FORM.GetUser(F_User);
+  end;
+  Result:=F_User;
+end;
+
 procedure TStudentSpot.SetUserStatus(AValue: TUserStatus);
 begin
   FStatus:=Ord(AValue);
@@ -425,6 +500,12 @@ end;
 procedure TStudentSpot.SetID64(AValue: Int64);
 begin
   FID:=AValue;
+end;
+
+destructor TStudentSpot.Destroy;
+begin
+  F_User.Free;
+  inherited Destroy;
 end;
 
 procedure TStudentSpot.Initiate;
