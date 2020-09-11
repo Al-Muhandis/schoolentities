@@ -807,7 +807,7 @@ end;
 procedure TUser.Initiate;
 begin
   inherited;
-  FLang:='ru';
+  FLang:='en';
   FSession:=0;
 end;
 

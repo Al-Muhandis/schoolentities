@@ -23,7 +23,9 @@ type
     TopUsers = specialize TdGSQLdbEntityOpf<TUser>;
   private
     FAutoApply: Boolean;
+    Fcon: TdSQLdbConnector;
     FCourses: TopCourses.TEntities;
+    FDBDir: String;
     FInvitations: TopInvitations.TEntities;
     FLessons: TopLessons.TEntities;
     FLogDebug: Boolean;
@@ -124,6 +126,7 @@ type
     function SessionExists(aUser: Int64): Boolean;
     function SpotInCourse(aUserID: Int64; aCourseID: Integer): Boolean;
     procedure StudentsToSCVDocument(aCSVStream: TStream);
+    property DBDir: String read FDBDir write FDBDir;
     property Course: TCourse read GetCourse;
     property CourseEntity[EntityType: TEntityType]: TCourseElement read GetCourseEntity;
     property Courses: TopCourses.TEntities read GetCourses;
@@ -151,9 +154,9 @@ uses
   csvdocument
   ;
 
-var
-  _con: TdSQLdbConnector = nil;
-  _query: TdSQLdbQuery = nil;
+//var
+//  _con: TdSQLdbConnector = nil;
+//  _query: TdSQLdbQuery = nil;
 
 { TopCoursesDB }
 
@@ -369,16 +372,22 @@ begin
 end;
 
 function TopCoursesDB.Con: TdSQLdbConnector;
+var
+  aDir: String;
 begin
-  if not Assigned(_con) then
+  if not Assigned(Fcon) then
   begin
-    _con := TdSQLdbConnector.Create(nil);
-    _con.Database := './'+'courses.sqlite3';
-    _con.Driver := 'sqlite3';
-    _con.Logger.Active := FLogDebug;
-    _con.Logger.FileName := 'db_sqlite3.log';
+    Fcon := TdSQLdbConnector.Create(nil);
+    if FDBDir<>EmptyStr then
+      aDir:=FDBDir
+    else
+      aDir:='./';
+    Fcon.Database :=aDir+'courses.sqlite3';
+    Fcon.Driver := 'sqlite3';
+    Fcon.Logger.Active := FLogDebug;
+    Fcon.Logger.FileName := aDir+'db_sqlite3.log';
   end;
-  Result := _con;
+  Result := FCon;
 end;
 
 destructor TopCoursesDB.Destroy;
@@ -397,6 +406,7 @@ begin
   FopSlides.Free;
   FStudentSpots.Free;
   FopStudentSpots.Free;
+  FCon.Free;
   inherited Destroy;
 end;
 
@@ -562,13 +572,18 @@ begin
 end;
 
 function TopCoursesDB.opLastInsertID: Integer;
+var
+  aQuery: TdSQLdbQuery;
 begin
-  if not Assigned(_query) then
-    _query:=TdSQLdbQuery.Create(Con);
-  _query.SQL.Text:='SELECT last_insert_rowid();';
-  _query.Open;
-  Result:=_query.Fields.Fields[0].AsInteger;
-  _query.Close;
+  aQuery:=TdSQLdbQuery.Create(Con);
+  try
+    aQuery.SQL.Text:='SELECT last_insert_rowid();';
+    aQuery.Open;
+    Result:=aQuery.Fields.Fields[0].AsInteger;
+  finally                                   
+    aQuery.Close;
+    aQuery.Free;
+  end;
 end;
 
 function TopCoursesDB.SpotNextSlide(aSpot: TStudentSpot; out IsLastLesson: Boolean): Integer;
@@ -965,9 +980,6 @@ begin
     aCSV.Free;
   end;
 end;
-
-finalization
-  FreeAndNil(_con);
 
 end.
 
