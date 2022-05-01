@@ -272,7 +272,10 @@ resourcestring
   s_Lesson='Lesson';
   s_Slide='Slide';
   s_Invitation='Invitation';
-  s_NotFound='Not found or no access!';
+  s_NotFound='Not found or no access!';  
+  s_FlNtFnd='File not found!';
+  s_NFlsFndOnRqst='No files found on request: "%s"';
+  s_TMnyFls='Too many files';
   s_NotPassed='You have not passed the previous lesson';
   s_AppliedFromAll='Applied %1d of %2d';
   s_Public='Public';
@@ -298,6 +301,7 @@ var
   SchoolClasses: array[TEntityType] of TSchoolElementClass =
     (TSchoolElement, TUser, TCourse, TLesson, TSlide, TInvitation, TSession, TStudentSpot,
     TStudentSpot, TStudentSpot, TSchoolElement);
+  DefaultLang: String;
 
 implementation
 
@@ -807,9 +811,12 @@ end;
 procedure TUser.Initiate;
 begin
   inherited;
-  FLang:='en';
+  FLang:=DefaultLang;
   FSession:=0;
 end;
+
+initialization
+  DefaultLang:='en';
 
 end.
 
