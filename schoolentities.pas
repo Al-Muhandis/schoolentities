@@ -6,7 +6,7 @@ unit SchoolEntities;
 interface
 
 uses
-  Classes, SysUtils, tgtypes
+  Classes, SysUtils
   ;
 
 type
@@ -24,6 +24,8 @@ type
     function GetCourse(aCourse: TCOurse): Boolean;
     function GetLesson(aLesson: TLesson): Boolean;
   end;
+
+  TContentType = (stText, stPhoto, stVideo, stAudio, stVoice, stDocument, stUnknown);
 
   { TSchoolElement }
 
@@ -680,18 +682,12 @@ end;
 
 function TCourseElement.GetMediaType: TContentType;
 begin
-  if FMediaType>=6 then
-    Result:=cntUnknown
-  else
-    Result:=TContentType(Succ(FMediaType));
+  Result:=TContentType(FMediaType);
 end;
 
 procedure TCourseElement.SetMediaType(AValue: TContentType);
 begin
-  if AValue=cntUnknown then
-    FMediaType:=6
-  else
-    FMediaType:=Pred(Ord(AValue));
+  FMediaType:=Ord(AValue);
 end;
 
 procedure TCourseElement.AssignTo(Dest: TPersistent);
