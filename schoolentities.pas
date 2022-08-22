@@ -6,7 +6,8 @@ unit SchoolEntities;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, tgtypes
+  ;
 
 type
   TEntityType = (seRoot, seUser, seCourse, seLesson, seSlide, seInvitation, seSession,
@@ -69,9 +70,6 @@ type
     property Name;
     property Session: Integer read FSession write FSession;
   end;
-
-
-  TContentType = (stText, stPhoto, stVideo, stAudio, stVoice, stDocument, stUnknown);
 
   { TCourseElement }
 
