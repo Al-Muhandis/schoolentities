@@ -680,12 +680,18 @@ end;
 
 function TCourseElement.GetMediaType: TContentType;
 begin
-  Result:=TContentType(FMediaType);
+  if FMediaType>=6 then
+    Result:=cntUnknown
+  else
+    Result:=TContentType(Succ(FMediaType));
 end;
 
 procedure TCourseElement.SetMediaType(AValue: TContentType);
 begin
-  FMediaType:=Ord(AValue);
+  if AValue=cntUnknown then
+    FMediaType:=6
+  else
+    FMediaType:=Pred(Ord(AValue));
 end;
 
 procedure TCourseElement.AssignTo(Dest: TPersistent);
