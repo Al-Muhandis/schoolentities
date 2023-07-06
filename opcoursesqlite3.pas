@@ -118,7 +118,7 @@ type
     function NewStudentSpot(aUserID: Int64; aCourseID: Integer; aUserStatus: TUserStatus = usStudent; aTearcher: Int64 = 0): Integer;
     function opLastInsertID: Integer;
     function SpotNextSlide(aSpot: TStudentSpot; out IsLastLesson: Boolean): Integer;
-    function ReplaceEntity(aEntityType: TEntityType; aID1, aID2: Int64): Boolean;
+    procedure ReplaceEntity(aEntityType: TEntityType; aID1, aID2: Int64);
     procedure SaveInvitation;
     procedure SaveUser;
     procedure SaveCourseEntity(aEntityType: TEntityType);
@@ -605,8 +605,8 @@ begin
   aSpot.Lesson:=Result;
 end;
 
-function TopCoursesDB.ReplaceEntity(aEntityType: TEntityType; aID1, aID2: Int64
-  ): Boolean;
+procedure TopCoursesDB.ReplaceEntity(aEntityType: TEntityType; aID1, aID2: Int64
+  );
 var
   aEntity: TSchoolElement;
 begin
