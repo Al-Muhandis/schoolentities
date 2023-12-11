@@ -82,6 +82,7 @@ type
     FMedia: String;
     FMediaType: Byte;
     FText: String;
+    FParentElement: Integer;
     function GetMediaType: TContentType;
     procedure SetMediaType(AValue: TContentType);
   protected
@@ -90,9 +91,10 @@ type
     procedure SetID64(AValue: Int64); override;
   public
     class function EntityType: TEntityType; override;
-    function GetParentID: Int64; virtual; abstract;
+    function GetParentID: Int64; virtual;
     procedure Initiate; override;
     property MediaType: TContentType read GetMediaType write SetMediaType;
+    property ParentElement: Integer read FParentElement write FParentElement;
   published
     property Name;
     property id: Integer read Fid write Fid;
@@ -137,31 +139,20 @@ type
   { TLesson }
 
   TLesson = class(TCourseElement)
-  private
-    FCourse: Integer;
-  protected
-    procedure AssignTo(Dest: TPersistent); override;
   public
-    function GetParentID: Int64; override;
-    procedure Initiate; override;
     class function EntityType: TEntityType; override;
   published
-    property Course: Integer read FCourse write FCourse;
+    property Course: Integer read FParentElement write FParentElement;
   end;
 
   { TSlide }
 
   TSlide = class(TCourseElement)
-  private
-    FLesson: Integer;
-  protected
-    procedure AssignTo(Dest: TPersistent); override;
   public
     class function EntityType: TEntityType; override;
-    function GetParentID: Int64; override;
     procedure Initiate; override;
   published
-    property Lesson: Integer read FLesson write FLesson;
+    property Lesson: Integer read FParentElement write FParentElement;
   end;
 
   { TInvitation }
@@ -576,19 +567,7 @@ end;
 procedure TSlide.Initiate;
 begin
   inherited;
-  FLesson:=0;
   FInteractive:=True;
-end;
-
-procedure TSlide.AssignTo(Dest: TPersistent);
-var
-  aDest: TSlide;
-begin
-  inherited AssignTo(Dest);
-  if not (Dest is TSlide) then
-    Exit;
-  aDest:=TSlide(Dest);
-  aDest.FLesson:=FLesson;
 end;
 
 class function TSlide.EntityType: TEntityType;
@@ -596,34 +575,7 @@ begin
   Result:=seSlide;
 end;
 
-function TSlide.GetParentID: Int64;
-begin
-  Result:=FLesson;
-end;
-
 { TLesson }
-
-procedure TLesson.AssignTo(Dest: TPersistent);
-var
-  aDest: TLesson;
-begin
-  inherited AssignTo(Dest);
-  if not (Dest is TLesson) then
-    Exit;
-  aDest:=TLesson(Dest);
-  aDest.FCourse:=FCourse;
-end;
-
-function TLesson.GetParentID: Int64;
-begin
-  Result:=FCourse;
-end;
-
-procedure TLesson.Initiate;
-begin
-  inherited;
-  FCourse:=0;
-end;
 
 class function TLesson.EntityType: TEntityType;
 begin
@@ -702,6 +654,7 @@ begin
   aDest.FMedia:=FMedia;
   aDest.FMediaType:=FMediaType;
   aDest.FText:=FText;
+  aDest.FParentElement:=FParentElement;
 end;
 
 function TCourseElement.GetID64: Int64;
@@ -719,6 +672,11 @@ begin
   Result:=seCourse;
 end;
 
+function TCourseElement.GetParentID: Int64;
+begin
+  Result:=FParentElement;
+end;
+
 procedure TCourseElement.Initiate;
 begin
   inherited Initiate;
@@ -726,6 +684,7 @@ begin
   FMedia:=EmptyStr;
   FMediaType:=0;
   FText:=EmptyStr;
+  FParentElement:=0;
 end;
 
 { TSchoolElement }
