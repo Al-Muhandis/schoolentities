@@ -384,7 +384,7 @@ begin
       aDir:='./';
     Fcon.Database :=aDir+'courses.sqlite3';
     Fcon.Driver := 'sqlite3';
-    Fcon.Logger.Active := FLogDebug;
+    //Fcon.Logger.Active := FLogDebug;
     Fcon.Logger.FileName := aDir+'db_sqlite3.log';
   end;
   Result := FCon;
